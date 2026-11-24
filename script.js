@@ -51,7 +51,7 @@ const STAFF_EMAILS = [
    APPLICATION STATE & CONSTANTS
    ========================================================================= */
 const GOOGLE_USER_KEY = 'csr_google_user_v1';
-const DEFAULT_PIN = '1234';
+const DEFAULT_PIN = 'ADMIN2026';
 
 const AREAS_LIST = [
   'Aliwekwek',
@@ -363,10 +363,6 @@ function openPublicView() {
 }
 
 function openStaffPortalView() {
-  if (!googleUser) {
-    openLoginView();
-    return;
-  }
   document.getElementById('login-view').classList.add('hidden');
   document.getElementById('public-view').classList.add('hidden');
   document.getElementById('btn-header-staff').classList.add('hidden');
@@ -381,6 +377,7 @@ function openStaffPortalView() {
     document.getElementById('err-pin').classList.add('hidden');
   }
 }
+
 
 function fillDefaultPin() {
   document.getElementById('staff-pin-input').value = DEFAULT_PIN;

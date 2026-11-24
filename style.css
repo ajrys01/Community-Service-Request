@@ -70,18 +70,19 @@
     }
 
     .header-container {
-      max-width: 1200px;
+      max-width: 100%;
       margin: 0 auto;
       padding: 14px 20px;
       display: flex;
       align-items: center;
+      flex-direction: row;
       justify-content: space-between;
       gap: 14px;
-      flex-wrap: wrap;
     }
 
     .brand-group {
       display: flex;
+      flex: 1 1 auto;
       align-items: center;
       gap: 12px;
       min-width: 0;
@@ -107,10 +108,16 @@
       color: var(--text-primary);
       line-height: 1.25;
     }
+    
 
     .brand-subtitle {
       font-size: 13px;
       color: var(--text-muted);
+    }
+
+    #btn-header-staff{
+      flex: 0 0 auto;
+      margin-left: auto;
     }
 
     .header-controls {
@@ -390,20 +397,7 @@
       margin: 16px auto;
     }
 
-    .pin-helper {
-      background-color: var(--bg-subtle);
-      border: 1px dashed var(--border-strong);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    
 
     .gate-actions {
       display: flex;

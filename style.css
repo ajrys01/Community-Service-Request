@@ -70,12 +70,12 @@
     }
 
     .header-container {
-      max-width: 100%;
+      max-width: 1200vh;
       margin: 0 auto;
       padding: 14px 20px;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      flex-direction: row;
       justify-content: space-between;
       gap: 14px;
     }
@@ -882,6 +882,11 @@
       padding: 16px 20px;
       font-size: 13px;
       color: var(--text-muted);
+      position:sticky;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
     }
 
     .footer-container {

@@ -278,6 +278,7 @@ function signInWithDemoGoogle() {
 function applySignedInUI(profile) {
   googleUser = profile;
 
+  document.getElementById('sign-in-staff').classList.add('hidden');
   document.getElementById('login-view').classList.add('hidden');
   document.getElementById('header-auth-controls').classList.remove('hidden');
   document.getElementById('header-user-name').textContent = profile.name;
@@ -351,6 +352,7 @@ function openPublicView() {
     openLoginView();
     return;
   }
+  document.getElementById('btn-header-staff').classList.add('hidden');
   document.getElementById('login-view').classList.add('hidden');
   document.getElementById('public-view').classList.remove('hidden');
   document.getElementById('staff-gate-view').classList.add('hidden');
@@ -365,7 +367,7 @@ function openPublicView() {
 function openStaffPortalView() {
   document.getElementById('login-view').classList.add('hidden');
   document.getElementById('public-view').classList.add('hidden');
-  document.getElementById('btn-header-staff').classList.add('hidden');
+  document.getElementById('sign-in-staff').classList.add('hidden');
   document.getElementById('btn-header-public').classList.remove('hidden');
 
   if (staffUnlocked) {
@@ -973,6 +975,7 @@ window.addEventListener('DOMContentLoaded', () => {
   subscribeToRequests();
 
   onAuthStateChanged(auth, (user) => {
+    
     if (user) {
       applySignedInUI({
         name: user.displayName || 'Google User',

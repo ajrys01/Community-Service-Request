@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Viewport meta tag ensures proper responsive rendering across mobile, tablet, and desktop -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Service Request</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-badge" aria-hidden="true">LCSR</div>
+        <div>
+          <h1 class="brand-title">Lingayen - Customer Service Request</h1>
+          <p class="brand-subtitle" id="header-context-label">Sign in with Google to Continue</p>
+        </div>
+      </div>
+
+      <div class="header-controls hidden" id="header-auth-controls">
+        <div class="user-profile-pill" id="header-user-pill">
+          <img id="header-user-avatar" class="user-avatar hidden" alt="User avatar" />
+          <span id="header-user-initials" class="user-avatar">U</span>
+          <span id="header-user-name">User</span>
+        </div>
+
+        <button type="button" class="btn btn-outline btn-sm" id="btn-header-staff" onclick="openStaffPortalView()">
+          Staff / Admin Portal
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm hidden" id="btn-header-public" onclick="openPublicView()">
+          Back to Public Form
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="handleGoogleSignOut()">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Primary Application Content -->
+  <main class="main-content">
+
+    <!-- =====================================================================
+         VIEW 0: GOOGLE SIGN-IN GATE (SHOWN UPON OPENING)
+         ===================================================================== -->
+    <section id="login-view" class="login-shell" aria-label="Google Sign-In">
+      <div class="card">
+        <div class="login-card-inner">
+          <div class="login-icon-badge" aria-hidden="true">CSR</div>
+          <h2 class="card-title" style="margin-bottom: 6px;">Sign in to Community Portal</h2>
+          <p style="font-size: 14px; color: var(--text-secondary, #4b5563); margin-bottom: 6px;">
+            Use your Google Account to report local service issues or access staff operations.
+          </p>
+
+          <!-- Official Google Sign-In Button Mount -->
+          <div class="google-btn-wrapper">
+            <div id="g_id_signin"></div>
+          </div>
+
+          <!-- Local Testing Fallback (if Google Client ID is not yet set) -->
+          <div id="local-demo-auth-box">
+            <div class="login-divider"><span>OR LOCAL PREVIEW</span></div>
+            <button type="button" class="btn-google-fallback" onclick="signInWithGoogle()">
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            <div class="config-note" id="google-client-warning">
+              <strong>Setup Note:</strong> Replace <code>YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com</code> in the script with your Google Cloud OAuth Client ID to enable live Google Sign-In.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VIEW 1: PUBLIC CITIZEN VIEW
+         ===================================================================== -->
+    <section id="public-view" class="citizen-shell hidden" aria-label="Public Issue Reporting">
+      <div class="citizen-intro">
+        <h2>Report a Community Issue</h2>
+        <p>Submit local service issues like damaged streetlights, potholes, drainage problems, or sanitation needs.</p>
+      </div>
+
+      <!-- Citizen Form Card -->
+      <div class="card" id="citizen-form-card">
+        <form id="citizen-form" onsubmit="handleCitizenFormSubmit(event)" novalidate>
+          <div class="form-grid-2 form-row-spaced">
+            <div class="form-field">
+              <label for="reporter-name">Reporter Name *</label>
+              <input type="text" id="reporter-name" name="reporterName" placeholder="e.g., Jordan Alvarez" required />
+              <span class="field-error hidden" id="err-reporter-name">Please enter your name.</span>
+            </div>
+
+            <div class="form-field">
+              <label for="reporter-contact">Contact Info (email or phone) *</label>
+              <input type="text" id="reporter-contact" name="reporterContact" placeholder="e.g., jordan@example.com or 555-0148" required />
+              <span class="field-error hidden" id="err-reporter-contact">Please provide an email or phone number.</span>
+            </div>
+          </div>
+
+          <div class="form-grid-2 form-row-spaced">
+      <div class="form-field">
+        <label for="issue-area">Area / Zone *</label>
+        <select id="issue-area" name="area" required>
+          <option value="">Select Area / Zone</option>
+          <option value="Aliwekwek">Aliwekwek</option>
+          <option value="Baay">Baay</option>
+          <option value="Balangobong">Balangobong</option>
+          <option value="Balococ">Balococ</option>
+          <option value="Bantayan">Bantayan</option>
+          <option value="Basing">Basing</option>
+          <option value="Capandanan">Capandanan</option>
+          <option value="Domalandan Center">Domalandan Center</option>
+          <option value="Domalandan East">Domalandan East</option>
+          <option value="Domalandan West">Domalandan West</option>
+          <option value="Dorongan">Dorongan</option>
+          <option value="Dulag">Dulag</option>
+          <option value="Estanza">Estanza</option>
+          <option value="Lasip">Lasip</option>
+          <option value="Libsong East">Libsong East</option>
+          <option value="Libsong West">Libsong West</option>
+          <option value="Malawa">Malawa</option>
+          <option value="Malimpuec">Malimpuec</option>
+          <option value="Maniboc">Maniboc</option>
+          <option value="Matalava">Matalava</option>
+          <option value="Naguelguel">Naguelguel</option>
+          <option value="Namolan">Namolan</option>
+          <option value="Pangapisan North">Pangapisan North</option>
+          <option value="Pangapisan Sur">Pangapisan Sur</option>
+          <option value="Poblacion">Poblacion</option>
+          <option value="Quibaol">Quibaol</option>
+          <option value="Rosario">Rosario</option>
+          <option value="Sabangan">Sabangan</option>
+          <option value="Talogtog">Talogtog</option>
+          <option value="Tonton">Tonton</option>
+          <option value="Tumbar">Tumbar</option>
+          <option value="Wawa">Wawa</option>
+        </select>
+        <span class="field-error hidden" id="err-issue-area">Please select an area or zone.</span>
+      </div>
+
+      <div class="form-field">
+        <label for="issue-category">Category *</label>
+        <select id="issue-category" name="category" required>
+          <option value="">Select Category</option>
+          <option value="Streetlight">Streetlight</option>
+          <option value="Fallen Tree">Fallen Tree</option>
+          <option value="Water & Drainage">Water &amp; Drainage</option>
+          <option value="Garbage & Sanitation">Garbage &amp; Sanitation</option>
+          <option value="Electrical">Electrical/Wiring Hazard</option>
+        </select>
+        <span class="field-error hidden" id="err-issue-category">Please choose a category.</span>
+      </div>
+    </div>
+
+          <div class="form-field">
+            <label for="issue-location">Location / Landmark *</label>
+            <input type="text" id="issue-location" name="location" placeholder="e.g., Maple St & 2nd Ave near Town Plaza" required />
+            <span class="field-error hidden" id="err-issue-location">Please enter a street location or landmark.</span>
+          </div>
+
+          <div class="form-field">
+            <label for="issue-description">Issue Description *</label>
+            <textarea id="issue-description" name="description" placeholder="Describe the issue clearly so our team can prepare the right tools and crew..." required></textarea>
+            <span class="field-error hidden" id="err-issue-description">Please describe the issue.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">Submit Request</button>
+        </form>
+      </div>
+
+      <!-- Confirmation Card Shown After Submitting -->
+      <div class="card confirmation-card hidden" id="citizen-confirmation-card" aria-live="polite">
+        <div class="check-circle" aria-hidden="true">&#10003;</div>
+        <h3>Service Request Submitted</h3>
+        <p style="font-size: 14px; color: var(--text-secondary);">
+          Thank you for reporting this issue. Save your tracking ID below for reference.
+        </p>
+        <div class="tracking-pill" id="confirmation-tracking-id">#CSR-000001</div>
+        <div class="confirmation-summary" id="confirmation-summary"></div>
+        <button type="button" class="btn btn-primary" style="margin-top: 6px;" onclick="resetCitizenFormView()">
+          Submit Another Issue
+        </button>
+      </div>
+    </section>
+
+<!-- =====================================================================
+         VIEW 2: STAFF ACCESS GATE
+ ===================================================================== -->
+    <section id="staff-gate-view" class="staff-gate-shell hidden" aria-label="Staff Portal Access">
+      <div class="card">
+        <div class="card-header-row">
+          <h2 class="card-title">Staff / Admin Portal Access</h2>
+        </div>
+
+        <form id="staff-pin-form" onsubmit="handlePinLogin(event)">
+          <div class="form-field">
+            <label for="staff-pin-input">Staff PIN</label>
+            <input type="password" id="staff-pin-input" placeholder="Enter PIN" autocomplete="off" />
+            <span class="field-error hidden" id="err-pin">Invalid PIN</span>
+          </div>
+
+          <div class="gate-actions">
+            <button type="submit" class="btn btn-primary btn-full">Unlock Staff Portal</button>
+            <button type="button" class="btn btn-outline btn-full" onclick="openPublicView()">
+              Back to Public Form
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VIEW 3: DEDICATED STAFF / ADMIN PORTAL
+         ===================================================================== -->
+    <section id="staff-portal-view" class="hidden" aria-label="Staff Operations Portal">
+
+      <!-- Top Staff Toolbar -->
+      <div class="staff-topbar">
+        <div class="tab-bar" role="tablist" aria-label="Staff Portal Sections">
+          <button type="button" class="tab-btn active" id="tab-queue-btn" role="tab" aria-selected="true" onclick="switchStaffTab('queue')">
+            Requests &amp; Queue
+          </button>
+          <button type="button" class="tab-btn" id="tab-reports-btn" role="tab" aria-selected="false" onclick="switchStaffTab('reports')">
+            Reports &amp; Insights
+          </button>
+        </div>
+
+        <div class="staff-right-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openPublicView()">
+            Back to Public Form
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary KPI Cards -->
+      <section class="stats-grid" aria-label="Request Summary Statistics">
+        <div class="stat-card stat-pending">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="stat-pending-count">0</div>
+          <div class="stat-caption">Waiting for triage or crew</div>
+        </div>
+
+        <div class="stat-card stat-progress">
+          <div class="stat-label">In Progress</div>
+          <div class="stat-value" id="stat-progress-count">0</div>
+          <div class="stat-caption">Assigned &amp; actively worked</div>
+        </div>
+
+        <div class="stat-card stat-completed">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="stat-completed-count">0</div>
+          <div class="stat-caption">Resolved or closed tickets</div>
+        </div>
+
+        <div class="stat-card stat-time">
+          <div class="stat-label">Avg. Resolution Time (hrs)</div>
+          <div class="stat-value" id="stat-avg-resolution">0.0h</div>
+          <div class="stat-caption">Across completed requests</div>
+        </div>
+      </section>
+
+      <!-- TAB 1: REQUESTS & QUEUE -->
+      <div id="staff-tab-queue" class="card">
+        <div class="card-header-row">
+          <h2 class="card-title">Service Requests Queue (<span id="queue-visible-count">0</span>)</h2>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-pending-only" onclick="togglePendingOnly()">
+            Pending Only
+          </button>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="filter-panel">
+          <div class="filter-top-row">
+            <input type="text" id="filter-search" oninput="renderQueueList()" placeholder="Search tracking ID, reporter, location, or description..." />
+          </div>
+
+          <div class="filter-bottom-row">
+            <select id="filter-status" onchange="syncStatusDropdown()">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+
+            <select id="filter-category" onchange="renderQueueList()">
+              <option value="ALL">All Categories</option>
+              <option value="Streetlight">Streetlight</option>
+              <option value="Road / Pothole">Road / Pothole</option>
+              <option value="Water & Drainage">Water &amp; Drainage</option>
+              <option value="Garbage & Sanitation">Garbage &amp; Sanitation</option>
+              <option value="Electrical">Parks &amp; Broken Electrical Wiring</option>
+            </select>
+
+            <select id="filter-area" onchange="renderQueueList()">
+              <option value="ALL">All Areas / Zones</option>
+              <option value="North Zone">North Zone</option>
+              <option value="South Zone">South Zone</option>
+              <option value="East District">East District</option>
+              <option value="West District">West District</option>
+              <option value="Central Hub">Central Hub</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="table-wrapper">
+          <table class="requests-table">
+            <thead>
+              <tr>
+                <th>Tracking ID</th>
+                <th>Issue &amp; Reporter</th>
+                <th>Area &amp; Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned Team</th>
+                <th>Due Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="desktop-requests-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Stacked Cards View -->
+        <div class="mobile-cards-container" id="mobile-requests-list"></div>
+      </div>
+
+      <!-- TAB 2: REPORTS & INSIGHTS -->
+      <div id="staff-tab-reports" class="reports-stack hidden">
+        <div class="card">
+          <div class="card-header-row" style="margin-bottom: 12px;">
+            <div>
+              <h2 class="card-title">Operations Reports &amp; Recurring Issue Insights</h2>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                Highlights repeat problem clusters (2+ reports in the same area &amp; category) and workload distribution.
+              </p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm no-print" onclick="window.print()">
+              Print Report
+            </button>
+          </div>
+
+          <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">
+            Recurring Issue Detector (2+ Reports in Same Area &amp; Category)
+          </h3>
+          <div id="recurring-issues-box"></div>
+        </div>
+
+        <div class="reports-two-col">
+          <div class="card">
+            <h3 class="card-title" style="padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color);">
+              Requests by Area / Zone
+            </h3>
+            <div id="report-by-area"></div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" style="padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color);">
+              Requests by Category
+            </h3>
+            <div id="report-by-category"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title" style="padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color);">
+            Response &amp; Resolution Time Summary
+          </h3>
+          <div id="report-resolution-summary" style="font-size: 14px; color: var(--text-secondary);"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <span>Customer Service Request System &bull; Community Operations</span>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       MANAGE REQUEST MODAL
+       ===================================================================== -->
+  <div class="modal-backdrop hidden" id="manage-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="handleModalBackdropClick(event)">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 id="modal-title">Manage Request</h3>
+        <button type="button" class="modal-close-btn" aria-label="Close modal" onclick="closeManageModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="request-detail-box" id="modal-request-summary"></div>
+
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label for="modal-status">Status</label>
+            <select id="modal-status">
+              <option value="Pending">Pending</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="modal-team">Assign Staff / Team</label>
+            <select id="modal-team">
+              <option value="Unassigned">Unassigned</option>
+              <option value="Electrical Crew">Electrical Crew</option>
+              <option value="Road & Paving Team">Road &amp; Paving Team</option>
+              <option value="Drainage & Water Crew">Drainage &amp; Water Crew</option>
+              <option value="Sanitation Unit">Sanitation Unit</option>
+              <option value="Parks Maintenance">Parks Maintenance</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label for="modal-priority">Priority</label>
+            <select id="modal-priority">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="modal-due-date">Due Date</label>
+            <input type="date" id="modal-due-date" />
+          </div>
+        </div>
+
+        <div class="form-field" style="margin-bottom: 0;">
+          <label for="modal-status-note">Status Note</label>
+          <input type="text" id="modal-status-note" placeholder="Add progress update, dispatch detail, or resolution note..." />
+        </div>
+
+        <div class="modal-actions">
+          <div class="modal-actions-left">
+            <button type="button" class="btn btn-primary" onclick="saveRequestManagementChanges()">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="closeManageModal()">Cancel</button>
+          </div>
+          <div class="modal-actions-right">
+            <button type="button" class="btn btn-danger-outline" id="btn-prompt-delete" onclick="promptDeleteRequest()">
+              Delete Request
+            </button>
+          </div>
+        </div>
+
+        <div class="delete-confirm-box hidden" id="delete-confirm-box" role="alert">
+          <span id="delete-confirm-text">Permanently delete this request?</span>
+          <div class="delete-confirm-actions">
+            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteRequest()">Confirm Delete</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelDeleteRequest()">Keep Request</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="history-section-title">Chronological Request History</div>
+          <div class="history-list" id="modal-history-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-banner hidden" id="toast-banner" role="status" aria-live="polite"></div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
